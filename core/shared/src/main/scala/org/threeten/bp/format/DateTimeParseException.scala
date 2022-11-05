@@ -56,8 +56,11 @@ class DateTimeParseException(
   message:                String,
   parsedData:             CharSequence,
   private val errorIndex: Int,
-  cause:                  Throwable = null
+  cause:                  Throwable
 ) extends DateTimeException(message, cause) {
+
+  def this(message: String, parsedData: CharSequence, errorIndex: Int) =
+    this(message, parsedData, errorIndex, null)
 
   /**
    * The text that was being parsed.
