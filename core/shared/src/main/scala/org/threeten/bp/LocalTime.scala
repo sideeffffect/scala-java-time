@@ -87,40 +87,40 @@ object LocalTime {
   lazy val NOON: LocalTime = HOURS(12)
 
   /** Hours per day. */
-  private[bp] val HOURS_PER_DAY: Int = 24
+  private[bp] final val HOURS_PER_DAY = 24
 
   /** Minutes per hour. */
-  private[bp] val MINUTES_PER_HOUR: Int = 60
+  private[bp] final val MINUTES_PER_HOUR = 60
 
   /** Minutes per day. */
-  private[bp] val MINUTES_PER_DAY: Int = MINUTES_PER_HOUR * HOURS_PER_DAY
+  private[bp] final val MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
 
   /** Seconds per minute. */
-  private[bp] val SECONDS_PER_MINUTE: Int = 60
+  private[bp] final val SECONDS_PER_MINUTE = 60
 
   /** Seconds per hour. */
-  private[bp] val SECONDS_PER_HOUR: Int = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+  private[bp] final val SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
 
   /** Seconds per day. */
-  private[bp] val SECONDS_PER_DAY: Int = SECONDS_PER_HOUR * HOURS_PER_DAY
+  private[bp] final val SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY
 
   /** Milliseconds per day. */
-  private[bp] val MILLIS_PER_DAY: Long = SECONDS_PER_DAY * 1000L
+  private[bp] final val MILLIS_PER_DAY = SECONDS_PER_DAY * 1000L
 
   /** Microseconds per day. */
-  private[bp] val MICROS_PER_DAY: Long = SECONDS_PER_DAY * 1000000L
+  private[bp] final val MICROS_PER_DAY = SECONDS_PER_DAY * 1000000L
 
   /** Nanos per second. */
-  private[bp] val NANOS_PER_SECOND: Long = 1000000000L
+  private[bp] final val NANOS_PER_SECOND = 1000000000L
 
   /** Nanos per minute. */
-  private[bp] val NANOS_PER_MINUTE: Long = NANOS_PER_SECOND * SECONDS_PER_MINUTE
+  private[bp] final val NANOS_PER_MINUTE = NANOS_PER_SECOND * SECONDS_PER_MINUTE
 
   /** Nanos per hour. */
-  private[bp] val NANOS_PER_HOUR: Long = NANOS_PER_MINUTE * MINUTES_PER_HOUR
+  private[bp] final val NANOS_PER_HOUR = NANOS_PER_MINUTE * MINUTES_PER_HOUR
 
   /** Nanos per day. */
-  private[bp] val NANOS_PER_DAY: Long = NANOS_PER_HOUR * HOURS_PER_DAY
+  private[bp] final val NANOS_PER_DAY = NANOS_PER_HOUR * HOURS_PER_DAY
 
   /**
    * Obtains the current time from the system clock in the default time-zone.

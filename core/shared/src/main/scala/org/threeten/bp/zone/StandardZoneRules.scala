@@ -47,7 +47,7 @@ import org.threeten.bp.ZoneOffset
 object StandardZoneRules {
 
   /** The last year to have its transitions cached. */
-  private val LAST_CACHED_YEAR: Int = 2100
+  private final val LAST_CACHED_YEAR = 2100
 
   /**
    * Creates an instance.
