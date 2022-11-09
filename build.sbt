@@ -299,7 +299,8 @@ lazy val demo = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name           := "demo",
     publish / skip := true,
     Keys.`package` := file(""),
-    zonesFilter    := zonesFilterFn
+    zonesFilter    := zonesFilterFn,
+    dbVersion      := TzdbPlugin.Version(tzdbVersion)
   )
   .jsSettings(
     // scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
