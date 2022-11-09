@@ -214,10 +214,10 @@ lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(commonSettings)
   .settings(
     name        := "scala-java-time-tzdb",
-    includeTTBP := true
+    includeTTBP := true,
+    dbVersion   := TzdbPlugin.Version(tzdbVersion)
   )
   .jsSettings(
-    dbVersion := TzdbPlugin.Version(tzdbVersion),
     Compile / sourceGenerators += Def.task {
       val srcDirs        = (Compile / sourceManaged).value
       val destinationDir = (Compile / sourceManaged).value
@@ -225,7 +225,6 @@ lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     }.taskValue
   )
   .nativeSettings(
-    dbVersion    := TzdbPlugin.Version(tzdbVersion),
     tzdbPlatform := TzdbPlugin.Platform.Native,
     Compile / sourceGenerators += Def.task {
       val srcDirs        = (Compile / sourceManaged).value
