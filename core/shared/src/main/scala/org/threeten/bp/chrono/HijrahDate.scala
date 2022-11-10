@@ -63,13 +63,13 @@ import org.threeten.bp.temporal.ValueRange
 object HijrahDate {
 
   /** The minimum valid year-of-era. */
-  val MIN_VALUE_OF_ERA: Int = 1
+  final val MIN_VALUE_OF_ERA = 1
 
   /**
    * The maximum valid year-of-era. This is currently set to 9999 but may be changed to increase the
    * valid range in a future version of the specification.
    */
-  val MAX_VALUE_OF_ERA: Int = 9999
+  final val MAX_VALUE_OF_ERA = 9999
 
   /**
    * 0-based, for number of day-of-year in the beginning of month in normal year.
@@ -106,12 +106,12 @@ object HijrahDate {
   /**
    * Position of day-of-month. This value is used to get the min/max value from an array.
    */
-  private val POSITION_DAY_OF_MONTH: Int = 5
+  private final val POSITION_DAY_OF_MONTH = 5
 
   /**
    * Position of day-of-year. This value is used to get the min/max value from an array.
    */
-  private val POSITION_DAY_OF_YEAR: Int = 6
+  private final val POSITION_DAY_OF_YEAR = 6
 
   /** Zero-based start date of cycle year. */
   private lazy val CYCLEYEAR_START_DATE: Array[Int] =

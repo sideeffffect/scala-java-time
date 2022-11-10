@@ -20,7 +20,7 @@ object HijrahDateConfigurator {
   private val PATH_SEP: String = File.pathSeparator
 
   /** Default config file name. */
-  private val DEFAULT_CONFIG_FILENAME: String = "hijrah_deviation.cfg"
+  private final val DEFAULT_CONFIG_FILENAME = "hijrah_deviation.cfg"
 
   /** Default path to the config file. */
   private val DEFAULT_CONFIG_PATH: String = s"org${FILE_SEP}threeten${FILE_SEP}bp${FILE_SEP}chrono"

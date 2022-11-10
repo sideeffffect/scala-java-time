@@ -61,16 +61,16 @@ object Duration {
   lazy val ZERO: Duration = new Duration(0, 0)
 
   /** Constant for nanos per second. */
-  private def NANOS_PER_SECOND: Int = 1000000000
+  private final val NANOS_PER_SECOND = 1000000000
 
   /** Constant for nanos per milli. */
-  private def NANOS_PER_MILLI: Int = 1000000
+  private final val NANOS_PER_MILLI = 1000000
 
   /** Constant for nanos per second. */
   private def BI_NANOS_PER_SECOND: BigInteger = BigInteger.valueOf(NANOS_PER_SECOND.toLong)
 
   /** The pattern for parsing. */
-  private def PATTERN: Pattern =
+  private lazy val PATTERN: Pattern =
     Pattern.compile(
       "([-+]?)P(?:([-+]?[0-9]+)D)?" + "(T(?:([-+]?[0-9]+)H)?(?:([-+]?[0-9]+)M)?(?:([-+]?[0-9]+)(?:[.,]([0-9]{0,9}))?S)?)?",
       Pattern.CASE_INSENSITIVE
