@@ -1,5 +1,5 @@
 val scalaJSVersion =
-  Option(System.getenv("SCALAJS_VERSION")).getOrElse("1.10.1")
+  Option(System.getenv("SCALAJS_VERSION")).getOrElse("1.11.0")
 
 addSbtPlugin("org.portable-scala" % "sbt-crossproject" % "1.2.0")
 
@@ -19,6 +19,9 @@ addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.5")
 
 addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.2.0")
 
-addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.4.7")
+addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.4.8")
 
 libraryDependencies += "org.snakeyaml" % "snakeyaml-engine" % "2.3"
+libraryDependencySchemes ++= Seq(
+  "org.scala-native" % "sbt-scala-native" % VersionScheme.Always
+)
