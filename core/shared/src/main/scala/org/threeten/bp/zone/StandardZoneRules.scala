@@ -194,30 +194,31 @@ final class StandardZoneRules private (
     wallOffsets:               Array[ZoneOffset],
     lastRules:                 Array[ZoneOffsetTransitionRule]
   ) =
-    this(standardTransitions,
-         standardOffsets,
-         savingsInstantTransitions,
-         wallOffsets,
-         lastRules, {
-           val localTransitionList: java.util.List[LocalDateTime] =
-             new java.util.ArrayList[LocalDateTime]
-           var i: Int                                             = 0
-           while (i < savingsInstantTransitions.length) {
-             val before: ZoneOffset          = wallOffsets(i)
-             val after: ZoneOffset           = wallOffsets(i + 1)
-             val trans: ZoneOffsetTransition =
-               new ZoneOffsetTransition(savingsInstantTransitions(i), before, after)
-             if (trans.isGap) {
-               localTransitionList.add(trans.getDateTimeBefore)
-               localTransitionList.add(trans.getDateTimeAfter)
-             } else {
-               localTransitionList.add(trans.getDateTimeAfter)
-               localTransitionList.add(trans.getDateTimeBefore)
-             }
-             i += 1
-           }
-           localTransitionList.toArray(new Array[LocalDateTime](localTransitionList.size))
-         }
+    this(
+      standardTransitions,
+      standardOffsets,
+      savingsInstantTransitions,
+      wallOffsets,
+      lastRules, {
+        val localTransitionList: java.util.List[LocalDateTime] =
+          new java.util.ArrayList[LocalDateTime]
+        var i: Int                                             = 0
+        while (i < savingsInstantTransitions.length) {
+          val before: ZoneOffset          = wallOffsets(i)
+          val after: ZoneOffset           = wallOffsets(i + 1)
+          val trans: ZoneOffsetTransition =
+            new ZoneOffsetTransition(savingsInstantTransitions(i), before, after)
+          if (trans.isGap) {
+            localTransitionList.add(trans.getDateTimeBefore)
+            localTransitionList.add(trans.getDateTimeAfter)
+          } else {
+            localTransitionList.add(trans.getDateTimeAfter)
+            localTransitionList.add(trans.getDateTimeBefore)
+          }
+          i += 1
+        }
+        localTransitionList.toArray(new Array[LocalDateTime](localTransitionList.size))
+      }
     )
 
   def isFixedOffset: Boolean = savingsInstantTransitions.length == 0
