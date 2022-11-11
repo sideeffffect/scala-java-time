@@ -37,7 +37,8 @@ import org.threeten.bp.temporal.TemporalUnit
 import org.threeten.bp.LocalTime.SECONDS_PER_DAY
 import org.threeten.bp.LocalTime.HOURS_PER_DAY
 import org.threeten.bp.LocalTime.SECONDS_PER_HOUR
-// import org.threeten.bp.LocalTime.SECONDS_PER_MINUTE
+import org.threeten.bp.LocalTime.MINUTES_PER_HOUR
+import org.threeten.bp.LocalTime.SECONDS_PER_MINUTE
 
 /** Test Duration. */
 class TestDuration extends AnyFunSuite with AssertionsHelper {
@@ -182,6 +183,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.toHours, test.toSeconds / SECONDS_PER_HOUR)
     assertEquals(test.toHoursPart, test.toHours / HOURS_PER_DAY)
+    assertEquals(test.toMinutesPart, test.toMinutes / MINUTES_PER_HOUR)
     assertEquals(test.getNano, 999999999)
   }
 
@@ -191,6 +193,8 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(test.toSeconds, Long.MaxValue / 1000000000)
     assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toMinutesPart, test.toMinutes / MINUTES_PER_HOUR)
+    assertEquals(test.toSecondsPart, test.toSeconds / SECONDS_PER_MINUTE)
     assertEquals(test.getNano, Long.MaxValue % 1000000000)
   }
 
@@ -200,6 +204,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(test.toSeconds, Long.MinValue / 1000000000 - 1)
     assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toMinutesPart, test.toMinutes / MINUTES_PER_HOUR)
     assertEquals(test.getNano, Long.MinValue % 1000000000 + 1000000000)
   }
 
@@ -1914,11 +1919,13 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("test_toNanos") {
     val test: Duration = Duration.ofSeconds(321, 123456789)
     assertEquals(test.toNanos, 321123456789L)
+    assertEquals(test.toNanosPart, 0L)
   }
 
   test("test_toNanos_max") {
     val test: Duration = Duration.ofSeconds(0, Long.MaxValue)
     assertEquals(test.toNanos, Long.MaxValue)
+    assertEquals(test.toNanosPart, 0L)
   }
 
   test("test_toNanos_tooBig") {
@@ -1931,11 +1938,13 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("test_toMillis") {
     val test: Duration = Duration.ofSeconds(321, 123456789)
     assertEquals(test.toMillis, 321000 + 123)
+    assertEquals(test.toMillisPart, 123)
   }
 
   test("test_toMillis_max") {
     val test: Duration = Duration.ofSeconds(Long.MaxValue / 1000, (Long.MaxValue % 1000) * 1000000)
     assertEquals(test.toMillis, Long.MaxValue)
+    assertEquals(test.toMillisPart, 807)
   }
 
   test("test_toMillis_tooBig") {
