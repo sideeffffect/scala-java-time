@@ -1938,13 +1938,11 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("test_toNanos") {
     val test: Duration = Duration.ofSeconds(321, 123456789)
     assertEquals(test.toNanos, 321123456789L)
-    assertEquals(test.toNanosPart, 0L)
   }
 
   test("test_toNanos_max") {
     val test: Duration = Duration.ofSeconds(0, Long.MaxValue)
     assertEquals(test.toNanos, Long.MaxValue)
-    assertEquals(test.toNanosPart, 0L)
   }
 
   test("test_toNanos_tooBig") {
