@@ -1216,6 +1216,21 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
   }
 
   /**
+   * Get the nanoseconds part within seconds of the duration.
+   *
+   * The length of the duration is stored using two fields - seconds and nanoseconds. The
+   * nanoseconds part is a value from 0 to 999,999,999 that is an adjustment to the length in
+   * seconds. The total duration is defined by calling getNano() and getSeconds().
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the nanoseconds within the second part of the length of the duration, from 0 to 999,999,999
+   * @since 9
+   */
+  def toNanosPart: Int = nanos
+
+  /**
    * Compares this duration to the specified {@code Duration}.
    *
    * The comparison is based on the total length of the durations. It is "consistent with equals",
