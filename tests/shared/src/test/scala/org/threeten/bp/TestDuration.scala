@@ -193,8 +193,8 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(test.toSeconds, Long.MaxValue / 1000000000)
     assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
-    assertEquals(test.toMinutesPart, test.toMinutes / MINUTES_PER_HOUR)
-    assertEquals(test.toSecondsPart, test.toSeconds / SECONDS_PER_MINUTE)
+    assertEquals(test.toMinutesPart, test.toMinutes % MINUTES_PER_HOUR)
+    assertEquals(test.toSecondsPart, test.toSeconds % SECONDS_PER_MINUTE)
     assertEquals(test.getNano, Long.MaxValue % 1000000000)
   }
 
@@ -204,7 +204,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(test.toSeconds, Long.MinValue / 1000000000 - 1)
     assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
-    assertEquals(test.toMinutesPart, test.toMinutes / MINUTES_PER_HOUR)
+    assertEquals(test.toMinutesPart, test.toMinutes % MINUTES_PER_HOUR)
     assertEquals(test.getNano, Long.MinValue % 1000000000 + 1000000000)
   }
 
@@ -1891,6 +1891,25 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(Duration.ofSeconds(-12, -20).negated, Duration.ofSeconds(12, 20))
     assertEquals(Duration.ofSeconds(-12, 20).negated, Duration.ofSeconds(12, -20))
     assertEquals(Duration.ofSeconds(Long.MaxValue).negated, Duration.ofSeconds(-Long.MaxValue))
+  }
+
+  test("test_*_part") {
+    assertEquals(Duration.ofSeconds(0).toSecondsPart, 0)
+    assertEquals(Duration.ofSeconds(59).toSecondsPart, 59)
+    assertEquals(Duration.ofSeconds(61).toSecondsPart, 1)
+    assertEquals(Duration.ofSeconds(187).toSecondsPart, 7)
+    assertEquals(Duration.ofDays(387).plusHours(18).plusMinutes(29).plusSeconds(88).plusMillis(234).toDaysPart, 387)
+    assertEquals(Duration.ofDays(387).plusHours(18).plusMinutes(29).plusSeconds(88).plusMillis(234).toHoursPart, 18)
+    assertEquals(Duration.ofDays(387).plusHours(18).plusMinutes(29).plusSeconds(38).plusMillis(234).toMinutesPart, 29)
+    assertEquals(Duration.ofDays(387).plusHours(18).plusMinutes(29).plusSeconds(88).plusMillis(234).toSecondsPart, 28)
+    assertEquals(Duration.ofDays(387).plusHours(18).plusMinutes(29).plusSeconds(88).plusMillis(234).toMillisPart, 234)
+  }
+
+  test("test_*_part_with_overflow") {
+    assertEquals(Duration.ofDays(3).plusHours(38).toDaysPart, 4)
+    assertEquals(Duration.ofDays(0).plusHours(18).plusMinutes(79).toHoursPart, 19)
+    assertEquals(Duration.ofDays(0).plusHours(18).plusMinutes(19).plusSeconds(90).toSecondsPart, 30)
+    assertEquals(Duration.ofDays(0).plusHours(18).plusMinutes(19).plusSeconds(90).plusMillis(10000).toSecondsPart, 40)
   }
 
   test("test_negated_overflow") {

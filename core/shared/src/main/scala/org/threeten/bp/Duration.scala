@@ -984,7 +984,7 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
    *   the number of seconds parts in the duration, may be negative
    * @since 9
    */
-  def toSecondsPart: Int = (toSeconds / SECONDS_PER_MINUTE).toInt
+  def toSecondsPart: Int = (toSeconds % SECONDS_PER_MINUTE).toInt
 
   /**
    * Returns a copy of this duration with the length negated.
@@ -1134,7 +1134,7 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
    *   the number of hours part in the duration, may be negative
    * @since 9
    */
-  def toHoursPart: Int = (toHours / HOURS_PER_DAY).toInt
+  def toHoursPart: Int = (toHours % HOURS_PER_DAY).toInt
 
   /**
    * Gets the number of minutes in this duration.
@@ -1161,7 +1161,7 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
    *   the number of minutes parts in the duration, may be negative
    * @since 9
    */
-  def toMinutesPart: Int = (toMinutes / MINUTES_PER_HOUR).toInt
+  def toMinutesPart: Int = (toMinutes % MINUTES_PER_HOUR).toInt
 
   /**
    * Converts this duration to the total length in milliseconds.
