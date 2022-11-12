@@ -407,7 +407,7 @@ abstract class ZoneId private[bp] () extends Serializable {
       .appendZoneText(style)
       .toFormatter(locale)
       .format(new TemporalAccessor() {
-        def isSupported(field: TemporalField): Boolean    = false
+        def isSupported(field: TemporalField): Boolean = false
         def getLong(field: TemporalField): Long           =
           throw new UnsupportedTemporalTypeException(s"Unsupported field: $field")
         override def query[R](query: TemporalQuery[R]): R =
