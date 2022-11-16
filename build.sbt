@@ -156,9 +156,10 @@ lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("tzdb"))
   .settings(commonSettings)
   .settings(
-    name        := "scala-java-time-tzdb",
-    includeTTBP := true,
-    dbVersion   := TzdbPlugin.Version(tzdbVersion)
+    name            := "scala-java-time-tzdb",
+    includeTTBP     := true,
+    dbVersion       := TzdbPlugin.Version(tzdbVersion),
+    tlFatalWarnings := false
   )
   .jsSettings(
     Compile / sourceGenerators += Def.task {
