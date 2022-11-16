@@ -1,26 +1,11 @@
 import org.scalajs.linker.interface.ModuleSplitStyle
-import sbtcrossproject.CrossPlugin.autoImport.{ CrossType, crossProject }
-import sbt._
-import sbt.io.Using
 
-val versions: Map[String, String] = {
-  import org.snakeyaml.engine.v2.api.{ Load, LoadSettings }
-  import java.util.{ List => JList, Map => JMap }
-  import scala.jdk.CollectionConverters._
-  val doc  = new Load(LoadSettings.builder().build())
-    .loadFromReader(scala.io.Source.fromFile(".github/workflows/scala.yml").bufferedReader())
-  val yaml = doc.asInstanceOf[
-    JMap[String, JMap[String, JMap[String, JMap[String, JMap[String, JList[String]]]]]]
-  ]
-  val list = yaml.get("jobs").get("test").get("strategy").get("matrix").get("scala").asScala
-  list.map { v =>
-    val vs = v.split('.'); val init = vs.take(vs(0) match { case "2" => 2; case _ => 1 });
-    (init.mkString("."), v)
-  }.toMap
-}
+val scala213 = "2.13.10"
+ThisBuild / scalaVersion       := scala213
+ThisBuild / crossScalaVersions := Seq("2.12.17", scala213, "3.2.1")
 
-val scalaVer                = versions("2.13")
-val scala3Ver               = versions("3")
+ThisBuild / tlBaseVersion := "2.5"
+
 val tzdbVersion             = "2019c"
 val scalajavaLocalesVersion = "1.5.0"
 Global / onChangedBuildSource := ReloadOnSourceChanges
@@ -28,55 +13,27 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val downloadFromZip: TaskKey[Unit] =
   taskKey[Unit]("Download the tzdb tarball and extract it")
 
-addCommandAlias("validate", ";clean;scalajavatimeTestsJVM/test;scalajavatimeTestsJS/test")
-addCommandAlias("demo", ";clean;demo/fastOptJS;demo/fullOptJS")
-
 inThisBuild(
   List(
-    organization := "io.github.cquiroz",
-    homepage     := Some(url("https://github.com/cquiroz/scala-java-time")),
-    licenses     := Seq("BSD 3-Clause License" -> url("https://opensource.org/licenses/BSD-3-Clause")),
-    developers   := List(
+    organization            := "io.github.cquiroz",
+    licenses                := Seq("BSD 3-Clause License" -> url("https://opensource.org/licenses/BSD-3-Clause")),
+    developers              := List(
       Developer("cquiroz",
                 "Carlos Quiroz",
                 "carlos.m.quiroz@gmail.com",
                 url("https://github.com/cquiroz")
       )
     ),
-    scmInfo      := Some(
-      ScmInfo(
-        url("https://github.com/cquiroz/scala-java-time"),
-        "scm:git:git@github.com:cquiroz/scala-java-time.git"
-      )
-    )
+    tlSonatypeUseLegacyHost := true,
+    tlMimaPreviousVersions  := Set()
   )
 )
 
-lazy val root = project
-  .in(file("."))
-  .settings(commonSettings)
-  .settings(
-    publish / skip := true
-  )
-  .aggregate(
-    core.js,
-    core.jvm,
-    core.native,
-    tzdb.js,
-    tzdb.jvm,
-    tzdb.native,
-    tests.js,
-    tests.jvm,
-    tests.native,
-    demo.js,
-    demo.jvm,
-    demo.native
-  )
+lazy val root = tlCrossRootProject.aggregate(core, tzdb, tests, demo)
 
 lazy val commonSettings = Seq(
   description                     := "java.time API implementation in Scala and Scala.js",
-  scalaVersion                    := scalaVer,
-  crossScalaVersions              := versions.toList.map(_._2),
+  versionScheme                   := Some("always"),
   // Don't include threeten on the binaries
   Compile / packageBin / mappings := (Compile / packageBin / mappings).value.filter { case (_, s) =>
     !s.contains("threeten")
@@ -97,9 +54,8 @@ lazy val commonSettings = Seq(
         Seq.empty
     }
   },
-  scalacOptions ++= { if (isDotty.value) Seq.empty else Seq("-target:jvm-1.8") },
   scalacOptions --= {
-    if (isDotty.value)
+    if (tlIsScala3.value)
       List(
         "-Xfatal-warnings"
       )
@@ -108,8 +64,7 @@ lazy val commonSettings = Seq(
       )
   },
   javaOptions ++= Seq("-Dfile.encoding=UTF8"),
-  autoAPIMappings                 := true,
-  Compile / doc / sources         := { if (isDotty.value) Seq() else (Compile / doc / sources).value }
+  autoAPIMappings                 := true
 )
 
 /**
@@ -170,23 +125,8 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
   .jsSettings(
     scalacOptions ++= {
-      if (isDotty.value) Seq("-scalajs-genStaticForwardersForNonTopLevelObjects")
+      if (tlIsScala3.value) Seq("-scalajs-genStaticForwardersForNonTopLevelObjects")
       else Seq("-P:scalajs:genStaticForwardersForNonTopLevelObjects")
-    },
-    scalacOptions ++= {
-
-      if (isDotty.value) Seq.empty
-      else {
-        val tagOrHash =
-          if (isSnapshot.value) sys.process.Process("git rev-parse HEAD").lineStream_!.head
-          else s"v${version.value}"
-        (Compile / sourceDirectories).value.map { f =>
-          val a = f.toURI.toString
-          val g =
-            "https://raw.githubusercontent.com/cquiroz/scala-java-time/" + tagOrHash + "/shared/src/main/scala/"
-          s"-P:scalajs:mapSourceURI:$a->$g/"
-        }
-      }
     },
     Compile / sourceGenerators += Def.task {
       val srcDirs        = (Compile / sourceDirectories).value
@@ -241,10 +181,10 @@ lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
 lazy val tests = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("tests"))
+  .enablePlugins(NoPublishPlugin)
   .settings(commonSettings)
   .settings(
     name               := "tests",
-    publish / skip     := true,
     Keys.`package`     := file(""),
     libraryDependencies +=
       "org.scalatest" %%% "scalatest" % "3.2.14" % Test,
@@ -264,18 +204,7 @@ lazy val tests = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
   )
-  .jsSettings(
-    Test / parallelExecution := false,
-    Test / sourceGenerators += Def.task {
-      val srcDirs        = (Test / sourceDirectories).value
-      val destinationDir = (Test / sourceManaged).value
-      copyAndReplace(srcDirs, destinationDir)
-    }.taskValue,
-    libraryDependencies ++= Seq(
-      "io.github.cquiroz" %%% "locales-full-db" % scalajavaLocalesVersion
-    )
-  )
-  .nativeSettings(
+  .platformsSettings(JSPlatform, NativePlatform)(
     Test / parallelExecution := false,
     Test / sourceGenerators += Def.task {
       val srcDirs        = (Test / sourceDirectories).value
@@ -293,46 +222,20 @@ val zonesFilterFn = (x: String) => x == "Europe/Helsinki" || x == "America/Santi
 lazy val demo = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("demo"))
   .dependsOn(core)
-  .enablePlugins(TzdbPlugin)
+  .enablePlugins(TzdbPlugin, NoPublishPlugin)
   .settings(
-    scalaVersion   := scalaVer,
-    name           := "demo",
-    publish / skip := true,
-    Keys.`package` := file(""),
-    zonesFilter    := zonesFilterFn,
-    dbVersion      := TzdbPlugin.Version(tzdbVersion)
+    name            := "demo",
+    Keys.`package`  := file(""),
+    zonesFilter     := zonesFilterFn,
+    dbVersion       := TzdbPlugin.Version(tzdbVersion),
+    tlFatalWarnings := false
   )
   .jsSettings(
-    // scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
-    // scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallestModules)),
     scalaJSUseMainModuleInitializer := true
   )
   .jvmSettings(
-    tzdbPlatform := TzdbPlugin.Platform.Jvm,
-    Compile / scalacOptions -= "-Xfatal-warnings"
+    tzdbPlatform := TzdbPlugin.Platform.Jvm
   )
   .nativeSettings(
-    tzdbPlatform := TzdbPlugin.Platform.Native,
-    // demo/native/target/scala-2.13/src_managed/main/tzdb/tzdb_java.scala:21:30: object JavaConverters in package collection is deprecated (since 2.13.0): Use `scala.jdk.CollectionConverters` instead
-    //    ZoneRules.of(bso, bwo, standardTransitions asJava, transitionList asJava, lastRules asJava)
-    //                           ^
-    Compile / scalacOptions -= "-Xfatal-warnings"
+    tzdbPlatform := TzdbPlugin.Platform.Native
   )
-
-// lazy val docs = project
-//   .in(file("docs"))
-//   .dependsOn(scalajavatime.jvm, scalajavatime.js)
-//   .settings(commonSettings)
-//   .settings(name := "docs")
-//   .enablePlugins(MicrositesPlugin)
-//   .settings(
-//     micrositeName := "scala-java-time",
-//     micrositeAuthor := "Carlos Quiroz",
-//     micrositeGithubOwner := "cquiroz",
-//     micrositeGithubRepo := "scala-java-time",
-//     micrositeBaseUrl := "/scala-java-time",
-//     micrositePushSiteWith := GitHub4s,
-//     //micrositeDocumentationUrl := "/scala-java-time/docs/",
-//     micrositeHighlightTheme := "color-brewer",
-//     micrositeGithubToken := Option(System.getProperty("GH_TOKEN"))
-//   )
