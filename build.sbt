@@ -6,6 +6,8 @@ ThisBuild / crossScalaVersions := Seq("2.12.17", scala213, "3.2.1")
 
 ThisBuild / tlBaseVersion := "2.5"
 
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
+
 val tzdbVersion             = "2019c"
 val scalajavaLocalesVersion = "1.5.0"
 Global / onChangedBuildSource := ReloadOnSourceChanges
