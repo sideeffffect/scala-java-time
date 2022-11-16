@@ -59,7 +59,8 @@ lazy val commonSettings = Seq(
   scalacOptions --= {
     if (tlIsScala3.value)
       List(
-        "-Xfatal-warnings"
+        "-Xfatal-warnings",
+        "-source:3.0-migration"
       )
     else
       List(
