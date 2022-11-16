@@ -228,7 +228,8 @@ lazy val demo = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     Keys.`package`  := file(""),
     zonesFilter     := zonesFilterFn,
     dbVersion       := TzdbPlugin.Version(tzdbVersion),
-    tlFatalWarnings := false
+    tlFatalWarnings := false,
+    Test / test     := (Compile / run).toTask("").value
   )
   .jsSettings(
     scalaJSUseMainModuleInitializer := true
