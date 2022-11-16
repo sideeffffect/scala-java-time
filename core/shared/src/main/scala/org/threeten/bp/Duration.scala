@@ -42,6 +42,8 @@ import java.util.regex.Pattern
 import org.threeten.bp.LocalTime.SECONDS_PER_DAY
 import org.threeten.bp.LocalTime.SECONDS_PER_HOUR
 import org.threeten.bp.LocalTime.SECONDS_PER_MINUTE
+import org.threeten.bp.LocalTime.HOURS_PER_DAY
+import org.threeten.bp.LocalTime.MINUTES_PER_HOUR
 import org.threeten.bp.format.DateTimeParseException
 import org.threeten.bp.temporal.ChronoField.NANO_OF_SECOND
 import org.threeten.bp.temporal.ChronoUnit
@@ -925,7 +927,7 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
   def multipliedBy(multiplicand: Long): Duration =
     if (multiplicand == 0) Duration.ZERO
     else if (multiplicand == 1) this
-    else Duration.create(toSeconds.multiply(BigDecimal.valueOf(multiplicand)))
+    else Duration.create(toSecondsBD.multiply(BigDecimal.valueOf(multiplicand)))
 
   /**
    * Returns a copy of this duration divided by the specified value.
@@ -944,7 +946,7 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
   def dividedBy(divisor: Long): Duration =
     if (divisor == 0) throw new ArithmeticException("Cannot divide by zero")
     else if (divisor == 1) this
-    else Duration.create(toSeconds.divide(BigDecimal.valueOf(divisor), RoundingMode.DOWN))
+    else Duration.create(toSecondsBD.divide(BigDecimal.valueOf(divisor), RoundingMode.DOWN))
 
   /**
    * Converts this duration to the total length in seconds and fractional nanoseconds expressed as a
@@ -953,8 +955,36 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
    * @return
    *   the total length of the duration in seconds, with a scale of 9, not null
    */
-  private def toSeconds: BigDecimal =
+  private def toSecondsBD: BigDecimal =
     BigDecimal.valueOf(seconds).add(BigDecimal.valueOf(nanos.toLong, 9))
+
+  /**
+   * Gets the number of seconds in this duration.
+   *
+   * This returns the total number of whole seconds in the duration.
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the whole seconds part of the length of the duration, positive or negative
+   *
+   * @since 9
+   */
+  def toSeconds: Long = seconds
+
+  /**
+   * Extracts the number of seconds part in the duration.
+   *
+   * This returns the remaining seconds when dividing toSeconds() by seconds in a minute. This is
+   * based on the standard definition of a minute as 60 seconds.
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the number of seconds parts in the duration, may be negative
+   * @since 9
+   */
+  def toSecondsPart: Int = (toSeconds % SECONDS_PER_MINUTE).toInt
 
   /**
    * Returns a copy of this duration with the length negated.
@@ -1066,6 +1096,20 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
   def toDays: Long = seconds / SECONDS_PER_DAY
 
   /**
+   * Extracts the number of days in the duration.
+   *
+   * This returns the total number of days in the duration by dividing the number of seconds by
+   * 86400. This is based on the standard definition of a day as 24 hours.
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the number of days in the duration, may be negative
+   * @since 9
+   */
+  def toDaysPart: Long = seconds / SECONDS_PER_DAY
+
+  /**
    * Gets the number of hours in this duration.
    *
    * This returns the total number of hours in the duration by dividing the number of seconds by
@@ -1079,6 +1123,20 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
   def toHours: Long = seconds / SECONDS_PER_HOUR
 
   /**
+   * Extracts the number of hours part in the duration.
+   *
+   * This returns the number of remaining hours when dividing toHours() by hours in a day. This is
+   * based on the standard definition of a day as 24 hours.
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the number of hours part in the duration, may be negative
+   * @since 9
+   */
+  def toHoursPart: Int = (toHours % HOURS_PER_DAY).toInt
+
+  /**
    * Gets the number of minutes in this duration.
    *
    * This returns the total number of minutes in the duration by dividing the number of seconds by
@@ -1090,6 +1148,20 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
    *   the number of minutes in the duration, may be negative
    */
   def toMinutes: Long = seconds / SECONDS_PER_MINUTE
+
+  /**
+   * Extracts the number of minutes part in the duration.
+   *
+   * This returns the number of remaining minutes when dividing toMinutes() by minutes in an hour.
+   * This is based on the standard definition of an hour as 60 minutes.
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the number of minutes parts in the duration, may be negative
+   * @since 9
+   */
+  def toMinutesPart: Int = (toMinutes % MINUTES_PER_HOUR).toInt
 
   /**
    * Converts this duration to the total length in milliseconds.
@@ -1112,6 +1184,22 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
   }
 
   /**
+   * Extracts the number of milliseconds part of the duration.
+   *
+   * This returns the milliseconds part by dividing the number of nanoseconds by 1,000,000. The
+   * length of the duration is stored using two fields - seconds and nanoseconds. The nanoseconds
+   * part is a value from 0 to 999,999,999 that is an adjustment to the length in seconds. The total
+   * duration is defined by calling getNano() and getSeconds().
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the number of milliseconds part of the duration.
+   * @since 9
+   */
+  def toMillisPart: Int = (nanos / Duration.NANOS_PER_MILLI).toInt
+
+  /**
    * Converts this duration to the total length in nanoseconds expressed as a {@code long}.
    *
    * If this duration is too large to fit in a {@code long} nanoseconds, then an exception is
@@ -1126,6 +1214,21 @@ final class Duration private (private val seconds: Long, private val nanos: Int)
     val result: Long = Math.multiplyExact(seconds, Duration.NANOS_PER_SECOND.toLong)
     Math.addExact(result, nanos.toLong)
   }
+
+  /**
+   * Get the nanoseconds part within seconds of the duration.
+   *
+   * The length of the duration is stored using two fields - seconds and nanoseconds. The
+   * nanoseconds part is a value from 0 to 999,999,999 that is an adjustment to the length in
+   * seconds. The total duration is defined by calling getNano() and getSeconds().
+   *
+   * This instance is immutable and unaffected by this method call.
+   *
+   * @return
+   *   the nanoseconds within the second part of the length of the duration, from 0 to 999,999,999
+   * @since 9
+   */
+  def toNanosPart: Int = nanos
 
   /**
    * Compares this duration to the specified {@code Duration}.

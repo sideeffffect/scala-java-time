@@ -39,3 +39,5 @@ tzdb/js/src/main/resources/
 .bloop/
 .metals/
 project/metals.sbt
+.direnv/
+.bsp/

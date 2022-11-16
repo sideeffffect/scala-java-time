@@ -34,12 +34,18 @@ package org.threeten.bp
 import org.scalatest.funsuite.AnyFunSuite
 import org.threeten.bp.temporal.ChronoUnit._
 import org.threeten.bp.temporal.TemporalUnit
+import org.threeten.bp.LocalTime.SECONDS_PER_DAY
+import org.threeten.bp.LocalTime.HOURS_PER_DAY
+import org.threeten.bp.LocalTime.SECONDS_PER_HOUR
+import org.threeten.bp.LocalTime.MINUTES_PER_HOUR
+import org.threeten.bp.LocalTime.SECONDS_PER_MINUTE
 
 /** Test Duration. */
 class TestDuration extends AnyFunSuite with AssertionsHelper {
 
   test("zero") {
     assertEquals(Duration.ZERO.getSeconds, 0L)
+    assertEquals(Duration.ZERO.toSeconds, 0L)
     assertEquals(Duration.ZERO.getNano, 0)
   }
 
@@ -49,6 +55,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
       {
         val t: Duration = Duration.ofSeconds(i)
         assertEquals(t.getSeconds, i)
+        assertEquals(t.toSeconds, i)
         assertEquals(t.getNano, 0)
       }
       {
@@ -68,6 +75,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
             {
               val t: Duration = Duration.ofSeconds(i, j)
               assertEquals(t.getSeconds, i)
+              assertEquals(t.toSeconds, i)
               assertEquals(t.getNano, j)
             }
             {
@@ -82,6 +90,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
             {
               val t: Duration = Duration.ofSeconds(i, j)
               assertEquals(t.getSeconds, i - 1)
+              assertEquals(t.toSeconds, i - 1)
               assertEquals(t.getNano, j + 1000000000)
             }
             {
@@ -115,6 +124,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("factory_seconds_long_long_nanosNegativeAdjusted") {
     val test: Duration = Duration.ofSeconds(2L, -1)
     assertEquals(test.getSeconds, 1)
+    assertEquals(test.toSeconds, 1)
     assertEquals(test.getNano, 999999999)
   }
 
@@ -144,6 +154,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
       case millis :: expectedSeconds :: expectedNanoOfSecond :: Nil =>
         val test: Duration = Duration.ofMillis(millis)
         assertEquals(test.getSeconds, expectedSeconds)
+        assertEquals(test.toSeconds, expectedSeconds)
         assertEquals(test.getNano, expectedNanoOfSecond)
       case _                                                        =>
         fail()
@@ -153,48 +164,68 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("factory_nanos_nanos") {
     val test: Duration = Duration.ofNanos(1)
     assertEquals(test.getSeconds, 0)
+    assertEquals(test.toSeconds, 0)
     assertEquals(test.getNano, 1)
   }
 
   test("factory_nanos_nanosSecs") {
     val test: Duration = Duration.ofNanos(1000000002)
     assertEquals(test.getSeconds, 1)
+    assertEquals(test.toSeconds, 1)
     assertEquals(test.getNano, 2)
   }
 
   test("factory_nanos_negative") {
     val test: Duration = Duration.ofNanos(-2000000001)
     assertEquals(test.getSeconds, -3)
+    assertEquals(test.toSeconds, -3)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toHours, test.toSeconds / SECONDS_PER_HOUR)
+    assertEquals(test.toHoursPart, test.toHours / HOURS_PER_DAY)
+    assertEquals(test.toMinutesPart, test.toMinutes / MINUTES_PER_HOUR)
     assertEquals(test.getNano, 999999999)
   }
 
   test("factory_nanos_max") {
     val test: Duration = Duration.ofNanos(Long.MaxValue)
     assertEquals(test.getSeconds, Long.MaxValue / 1000000000)
-    assertEquals(test.getNano, Long.MaxValue % 1000000000)
+    assertEquals(test.toSeconds, Long.MaxValue / 1000000000)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toMinutesPart, test.toMinutes % MINUTES_PER_HOUR)
+    assertEquals(test.toSecondsPart, test.toSeconds % SECONDS_PER_MINUTE)
+    assertEquals(test.getNano, Long.MaxValue        % 1000000000)
   }
 
   test("factory_nanos_min") {
     val test: Duration = Duration.ofNanos(Long.MinValue)
     assertEquals(test.getSeconds, Long.MinValue / 1000000000 - 1)
-    assertEquals(test.getNano, Long.MinValue % 1000000000 + 1000000000)
+    assertEquals(test.toSeconds, Long.MinValue / 1000000000 - 1)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toMinutesPart, test.toMinutes % MINUTES_PER_HOUR)
+    assertEquals(test.getNano, Long.MinValue        % 1000000000 + 1000000000)
   }
 
   test("factory_minutes") {
     val test: Duration = Duration.ofMinutes(2)
     assertEquals(test.getSeconds, 120)
+    assertEquals(test.toSeconds, 120)
     assertEquals(test.getNano, 0)
   }
 
   test("factory_minutes_max") {
     val test: Duration = Duration.ofMinutes(Long.MaxValue / 60)
     assertEquals(test.getSeconds, (Long.MaxValue / 60) * 60)
+    assertEquals(test.toSeconds, (Long.MaxValue / 60) * 60)
     assertEquals(test.getNano, 0)
   }
 
   test("factory_minutes_min") {
     val test: Duration = Duration.ofMinutes(Long.MinValue / 60)
     assertEquals(test.getSeconds, (Long.MinValue / 60) * 60)
+    assertEquals(test.toSeconds, (Long.MinValue / 60) * 60)
     assertEquals(test.getNano, 0)
   }
 
@@ -213,18 +244,25 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("factory_hours") {
     val test: Duration = Duration.ofHours(2)
     assertEquals(test.getSeconds, 2 * 3600)
+    assertEquals(test.toSeconds, 2 * 3600)
     assertEquals(test.getNano, 0)
   }
 
   test("factory_hours_max") {
     val test: Duration = Duration.ofHours(Long.MaxValue / 3600)
     assertEquals(test.getSeconds, (Long.MaxValue / 3600) * 3600)
+    assertEquals(test.toSeconds, (Long.MaxValue / 3600) * 3600)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.getNano, 0)
   }
 
   test("factory_hours_min") {
     val test: Duration = Duration.ofHours(Long.MinValue / 3600)
     assertEquals(test.getSeconds, (Long.MinValue / 3600) * 3600)
+    assertEquals(test.toSeconds, (Long.MinValue / 3600) * 3600)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.getNano, 0)
   }
 
@@ -243,18 +281,24 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("factory_days") {
     val test: Duration = Duration.ofDays(2)
     assertEquals(test.getSeconds, 2 * 86400)
+    assertEquals(test.toSeconds, 2 * 86400)
     assertEquals(test.getNano, 0)
   }
 
   test("factory_days_max") {
     val test: Duration = Duration.ofDays(Long.MaxValue / 86400)
     assertEquals(test.getSeconds, (Long.MaxValue / 86400) * 86400)
+    assertEquals(test.toSeconds, (Long.MaxValue / 86400) * 86400)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.getNano, 0)
   }
 
   test("factory_days_min") {
     val test: Duration = Duration.ofDays(Long.MinValue / 86400)
-    assertEquals(test.getSeconds, (Long.MinValue / 86400) * 86400)
+    assertEquals(test.toSeconds, (Long.MinValue / 86400) * 86400)
+    assertEquals(test.toDays, test.toSeconds / SECONDS_PER_DAY)
+    assertEquals(test.toDaysPart, test.toSeconds / SECONDS_PER_DAY)
     assertEquals(test.getNano, 0)
   }
 
@@ -349,6 +393,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
       case (amount: Long) :: (unit: TemporalUnit) :: (expectedSeconds: Long) :: (expectedNanoOfSecond: Int) :: Nil =>
         val t: Duration = Duration.of(amount, unit)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                       =>
         fail()
@@ -403,6 +448,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         val end: Instant   = Instant.ofEpochSecond(secs2, nanos2)
         val t: Duration    = Duration.between(start, end)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                    =>
         fail()
@@ -480,6 +526,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
       case (text: String) :: (expectedSeconds: Long) :: (expectedNanoOfSecond: Long) :: Nil =>
         val t: Duration = Duration.parse(text)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                =>
         fail()
@@ -491,6 +538,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
       case (text: String) :: (expectedSeconds: Long) :: (expectedNanoOfSecond: Long) :: Nil =>
         val t: Duration = Duration.parse(text.toLowerCase)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                =>
         fail()
@@ -504,6 +552,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         _text = _text.replace('.', ',')
         val t: Duration = Duration.parse(_text)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                =>
         fail()
@@ -788,6 +837,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         val t: Duration =
           Duration.ofSeconds(seconds, nanos).plus(Duration.ofSeconds(otherSeconds, otherNanos))
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                                                =>
         fail()
@@ -812,6 +862,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.plus(1, SECONDS)
     assertEquals(2, t.getSeconds)
+    assertEquals(2, t.toSeconds)
     assertEquals(0, t.getNano)
   }
 
@@ -819,6 +870,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.plus(1, MILLIS)
     assertEquals(1, t.getSeconds)
+    assertEquals(1, t.toSeconds)
     assertEquals(1000000, t.getNano)
   }
 
@@ -826,6 +878,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.plus(1, MICROS)
     assertEquals(1, t.getSeconds)
+    assertEquals(1, t.toSeconds)
     assertEquals(1000, t.getNano)
   }
 
@@ -833,6 +886,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.plus(1, NANOS)
     assertEquals(1, t.getSeconds)
+    assertEquals(1, t.toSeconds)
     assertEquals(1, t.getNano)
   }
 
@@ -873,6 +927,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.plusSeconds(amount)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -949,6 +1004,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.plusMillis(amount)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -961,6 +1017,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds + 1, nanos)
         t = t.plusMillis(amount)
         assertEquals(t.getSeconds, expectedSeconds + 1)
+        assertEquals(t.toSeconds, expectedSeconds + 1)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -973,6 +1030,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds - 1, nanos)
         t = t.plusMillis(amount)
         assertEquals(t.getSeconds, expectedSeconds - 1)
+        assertEquals(t.toSeconds, expectedSeconds - 1)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -983,6 +1041,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(Long.MaxValue, 998999999)
     t = t.plusMillis(1)
     assertEquals(t.getSeconds, Long.MaxValue)
+    assertEquals(t.toSeconds, Long.MaxValue)
     assertEquals(t.getNano, 999999999)
   }
 
@@ -997,6 +1056,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(Long.MinValue, 1000000)
     t = t.plusMillis(-1)
     assertEquals(t.getSeconds, Long.MinValue)
+    assertEquals(t.toSeconds, Long.MinValue)
     assertEquals(t.getNano, 0)
   }
 
@@ -1081,6 +1141,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.plusNanos(amount)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -1279,6 +1340,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         val t: Duration =
           Duration.ofSeconds(seconds, nanos).minus(Duration.ofSeconds(otherSeconds, otherNanos))
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                                                =>
         fail()
@@ -1303,6 +1365,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.minus(1, SECONDS)
     assertEquals(0, t.getSeconds)
+    assertEquals(0, t.toSeconds)
     assertEquals(0, t.getNano)
   }
 
@@ -1310,6 +1373,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.minus(1, MILLIS)
     assertEquals(0, t.getSeconds)
+    assertEquals(0, t.toSeconds)
     assertEquals(999000000, t.getNano)
   }
 
@@ -1317,6 +1381,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.minus(1, MICROS)
     assertEquals(0, t.getSeconds)
+    assertEquals(0, t.toSeconds)
     assertEquals(999999000, t.getNano)
   }
 
@@ -1324,6 +1389,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(1)
     t = t.minus(1, NANOS)
     assertEquals(0, t.getSeconds)
+    assertEquals(0, t.toSeconds)
     assertEquals(999999999, t.getNano)
   }
 
@@ -1363,6 +1429,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.minusSeconds(amount)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -1439,6 +1506,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.minusMillis(amount)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -1451,6 +1519,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds + 1, nanos)
         t = t.minusMillis(amount)
         assertEquals(t.getSeconds, expectedSeconds + 1)
+        assertEquals(t.toSeconds, expectedSeconds + 1)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -1463,6 +1532,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds - 1, nanos)
         t = t.minusMillis(amount)
         assertEquals(t.getSeconds, expectedSeconds - 1)
+        assertEquals(t.toSeconds, expectedSeconds - 1)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -1473,6 +1543,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(Long.MaxValue, 998999999)
     t = t.minusMillis(-1)
     assertEquals(t.getSeconds, Long.MaxValue)
+    assertEquals(t.toSeconds, Long.MaxValue)
     assertEquals(t.getNano, 999999999)
   }
 
@@ -1487,6 +1558,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     var t: Duration = Duration.ofSeconds(Long.MinValue, 1000000)
     t = t.minusMillis(1)
     assertEquals(t.getSeconds, Long.MinValue)
+    assertEquals(t.toSeconds, Long.MinValue)
     assertEquals(t.getNano, 0)
   }
 
@@ -1571,6 +1643,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.minusNanos(amount)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanoOfSecond)
       case _                                                                                                                    =>
         fail()
@@ -1678,6 +1751,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.multipliedBy(multiplicand)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanos)
       case _                                                                                                              =>
         fail()
@@ -1784,6 +1858,7 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
         var t: Duration = Duration.ofSeconds(seconds, nanos)
         t = t.dividedBy(divisor)
         assertEquals(t.getSeconds, expectedSeconds)
+        assertEquals(t.toSeconds, expectedSeconds)
         assertEquals(t.getNano, expectedNanos)
       case _                                                                                                         =>
         fail()
@@ -1818,6 +1893,79 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
     assertEquals(Duration.ofSeconds(Long.MaxValue).negated, Duration.ofSeconds(-Long.MaxValue))
   }
 
+  test("test_*_part") {
+    assertEquals(Duration.ofSeconds(0).toSecondsPart, 0)
+    assertEquals(Duration.ofSeconds(59).toSecondsPart, 59)
+    assertEquals(Duration.ofSeconds(61).toSecondsPart, 1)
+    assertEquals(Duration.ofSeconds(187).toSecondsPart, 7)
+    assertEquals(
+      Duration.ofDays(387).plusHours(18).plusMinutes(29).plusSeconds(88).plusMillis(234).toDaysPart,
+      387
+    )
+    assertEquals(Duration
+                   .ofDays(387)
+                   .plusHours(18)
+                   .plusMinutes(29)
+                   .plusSeconds(88)
+                   .plusMillis(234)
+                   .toHoursPart,
+                 18
+    )
+    assertEquals(Duration
+                   .ofDays(387)
+                   .plusHours(18)
+                   .plusMinutes(29)
+                   .plusSeconds(38)
+                   .plusMillis(234)
+                   .toMinutesPart,
+                 29
+    )
+    assertEquals(Duration
+                   .ofDays(387)
+                   .plusHours(18)
+                   .plusMinutes(29)
+                   .plusSeconds(88)
+                   .plusMillis(234)
+                   .toSecondsPart,
+                 28
+    )
+    assertEquals(Duration
+                   .ofDays(387)
+                   .plusHours(18)
+                   .plusMinutes(29)
+                   .plusSeconds(88)
+                   .plusMillis(234)
+                   .plusNanos(4000)
+                   .toNanosPart,
+                 234004000
+    )
+  }
+
+  test("test_*_part_with_overflow") {
+    assertEquals(Duration.ofDays(3).plusHours(38).toDaysPart, 4)
+    assertEquals(Duration.ofDays(0).plusHours(18).plusMinutes(79).toHoursPart, 19)
+    assertEquals(Duration.ofDays(0).plusHours(18).plusMinutes(19).plusSeconds(90).toSecondsPart, 30)
+    assertEquals(Duration
+                   .ofDays(0)
+                   .plusHours(18)
+                   .plusMinutes(19)
+                   .plusSeconds(90)
+                   .plusMillis(10000)
+                   .toSecondsPart,
+                 40
+    )
+    assertEquals(Duration
+                   .ofDays(0)
+                   .plusHours(18)
+                   .plusMinutes(19)
+                   .plusSeconds(90)
+                   .plusMillis(10000)
+                   .plusNanos(666666)
+                   .toNanosPart,
+                 666666
+    )
+  }
+
   test("test_negated_overflow") {
     assertThrows[ArithmeticException] {
       Duration.ofSeconds(Long.MinValue).negated
@@ -1844,11 +1992,13 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("test_toNanos") {
     val test: Duration = Duration.ofSeconds(321, 123456789)
     assertEquals(test.toNanos, 321123456789L)
+    assertEquals(test.toNanosPart, 123456789L)
   }
 
   test("test_toNanos_max") {
     val test: Duration = Duration.ofSeconds(0, Long.MaxValue)
     assertEquals(test.toNanos, Long.MaxValue)
+    assertEquals(test.toNanosPart, 854775807L)
   }
 
   test("test_toNanos_tooBig") {
@@ -1861,11 +2011,13 @@ class TestDuration extends AnyFunSuite with AssertionsHelper {
   test("test_toMillis") {
     val test: Duration = Duration.ofSeconds(321, 123456789)
     assertEquals(test.toMillis, 321000 + 123)
+    assertEquals(test.toMillisPart, 123)
   }
 
   test("test_toMillis_max") {
     val test: Duration = Duration.ofSeconds(Long.MaxValue / 1000, (Long.MaxValue % 1000) * 1000000)
     assertEquals(test.toMillis, Long.MaxValue)
+    assertEquals(test.toMillisPart, 807)
   }
 
   test("test_toMillis_tooBig") {

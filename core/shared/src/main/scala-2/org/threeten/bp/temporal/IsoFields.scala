@@ -234,7 +234,7 @@ object IsoFields {
         if (resolverStyle eq ResolverStyle.LENIENT) {
           val qoy: Long = qoyLong
           date = LocalDate.of(y, 1, 1)
-          date = date.plusMonths(Math.multiplyExact(Math.subtractExact(qoy, 1), 3))
+          date = date.plusMonths(Math.multiplyExact(Math.subtractExact(qoy, 1), 3L))
           date = date.plusDays(Math.subtractExact(doq, 1))
         } else {
           val qoy: Int = QUARTER_OF_YEAR.range.checkValidIntValue(qoyLong, QUARTER_OF_YEAR)
