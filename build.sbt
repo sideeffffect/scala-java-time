@@ -26,7 +26,8 @@ inThisBuild(
     ),
     tlSonatypeUseLegacyHost := true,
     tlMimaPreviousVersions  := Set(),
-    tlCiReleaseBranches     := Seq("master")
+    tlCiReleaseBranches     := Seq("master"),
+    tlCiHeaderCheck         := false
   )
 )
 
