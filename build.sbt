@@ -71,7 +71,7 @@ lazy val commonSettings = Seq(
       )
   },
   javaOptions ++= Seq("-Dfile.encoding=UTF8"),
-  autoAPIMappings                 := true
+  Compile / doc / sources         := Seq()
 )
 
 /**
