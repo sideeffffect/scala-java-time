@@ -237,6 +237,7 @@ lazy val demo = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     zonesFilter     := zonesFilterFn,
     dbVersion       := TzdbPlugin.Version(tzdbVersion),
     tlFatalWarnings := false,
+    // delegate test to run, so that it is invoked during test step in ci
     Test / test     := (Compile / run).toTask("").value
   )
   .jsSettings(
