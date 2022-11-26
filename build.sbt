@@ -44,6 +44,9 @@ lazy val commonSettings = Seq(
   Compile / packageBin / mappings := (Compile / packageBin / mappings).value.filter { case (_, s) =>
     !s.contains("threeten")
   },
+  Compile / packageSrc / mappings := (Compile / packageSrc / mappings).value.filter { case (_, s) =>
+    !s.contains("threeten")
+  },
   Compile / scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, scalaMajor)) if scalaMajor == 13 =>
