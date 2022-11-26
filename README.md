@@ -17,6 +17,7 @@ To get started with SBT, add one (or both) of these dependencies:
 
 - `libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.5.0"`
 
+
 #### Documentation
 
 See the [documentation](http://cquiroz.github.io/scala-java-time/)
