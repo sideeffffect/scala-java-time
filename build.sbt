@@ -11,7 +11,7 @@ ThisBuild / githubWorkflowBuildMatrixExclusions += // TODO
   MatrixExclude(Map("scala" -> scala3, "project" -> "rootJVM"))
 
 val tzdbVersion             = "2019c"
-val scalajavaLocalesVersion = "1.5.0"
+val scalajavaLocalesVersion = "1.5.1"
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val downloadFromZip: TaskKey[Unit] =
