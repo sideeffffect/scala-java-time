@@ -10,6 +10,8 @@ ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 ThisBuild / githubWorkflowBuildMatrixExclusions += // TODO
   MatrixExclude(Map("scala" -> scala3, "project" -> "rootJVM"))
 
+Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
+
 val tzdbVersion             = "2019c"
 val scalajavaLocalesVersion = "1.5.1"
 Global / onChangedBuildSource := ReloadOnSourceChanges
