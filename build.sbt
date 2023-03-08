@@ -157,7 +157,8 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     }.taskValue,
     libraryDependencies ++= Seq(
       "io.github.cquiroz" %%% "scala-java-locales" % scalajavaLocalesVersion
-    )
+    ),
+    Test / loadedTestFrameworks := Map.empty // workaround
   )
 
 lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -178,12 +179,13 @@ lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     }.taskValue
   )
   .nativeSettings(
-    tzdbPlatform := TzdbPlugin.Platform.Native,
+    tzdbPlatform                := TzdbPlugin.Platform.Native,
     Compile / sourceGenerators += Def.task {
       val srcDirs        = (Compile / sourceManaged).value
       val destinationDir = (Compile / sourceManaged).value
       copyAndReplace(Seq(srcDirs), destinationDir)
-    }.taskValue
+    }.taskValue,
+    Test / loadedTestFrameworks := Map.empty // workaround
   )
   .jvmSettings(
     tzdbPlatform := TzdbPlugin.Platform.Jvm
@@ -252,5 +254,6 @@ lazy val demo = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     tzdbPlatform := TzdbPlugin.Platform.Jvm
   )
   .nativeSettings(
-    tzdbPlatform := TzdbPlugin.Platform.Native
+    tzdbPlatform                := TzdbPlugin.Platform.Native,
+    Test / loadedTestFrameworks := Map.empty // workaround
   )
