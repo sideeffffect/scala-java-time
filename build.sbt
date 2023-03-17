@@ -157,8 +157,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     }.taskValue,
     libraryDependencies ++= Seq(
       "io.github.cquiroz" %%% "scala-java-locales" % scalajavaLocalesVersion
-    ),
-    Test / loadedTestFrameworks := Map.empty // workaround
+    )
   )
 
 lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
@@ -254,6 +253,5 @@ lazy val demo = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     tzdbPlatform := TzdbPlugin.Platform.Jvm
   )
   .nativeSettings(
-    tzdbPlatform                := TzdbPlugin.Platform.Native,
-    Test / loadedTestFrameworks := Map.empty // workaround
+    tzdbPlatform := TzdbPlugin.Platform.Native
   )
