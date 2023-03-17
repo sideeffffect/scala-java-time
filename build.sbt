@@ -7,10 +7,15 @@ ThisBuild / tlBaseVersion := "2.5"
 
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 
-ThisBuild / githubWorkflowBuildMatrixExclusions += // TODO
-  MatrixExclude(Map("scala" -> scala3, "project" -> "rootJVM"))
+ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
+  MatrixExclude(Map("scala" -> scala3, "project" -> "rootJVM")), // TODO
+  MatrixExclude(
+    Map("scala" -> scala3, "project" -> "rootNative", "os" -> "ubuntu-latest")
+  ) // run on macOS instead
+)
 
-Global / concurrentRestrictions += Tags.limit(NativeTags.Link, 1)
+ThisBuild / githubWorkflowBuildMatrixInclusions +=
+  MatrixInclude(Map("scala" -> scala3, "project" -> "rootNative"), Map("os" -> "macos-latest"))
 
 val tzdbVersion             = "2019c"
 val scalajavaLocalesVersion = "1.5.1"
