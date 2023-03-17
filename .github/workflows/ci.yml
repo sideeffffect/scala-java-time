@@ -33,6 +33,7 @@ jobs:
         project: [rootJS, rootJVM, rootNative]
         include:
           - scala: 3.2.1
+            java: temurin@11
             project: rootNative
             os: macos-latest
         exclude:

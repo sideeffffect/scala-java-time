@@ -5,7 +5,8 @@ ThisBuild / crossScalaVersions := Seq("2.12.17", scala213, scala3)
 
 ThisBuild / tlBaseVersion := "2.5"
 
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
+val temurin11 = JavaSpec.temurin("11")
+ThisBuild / githubWorkflowJavaVersions := Seq(temurin11)
 
 ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
   MatrixExclude(Map("scala" -> scala3, "project" -> "rootJVM")), // TODO
@@ -15,7 +16,9 @@ ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
 )
 
 ThisBuild / githubWorkflowBuildMatrixInclusions +=
-  MatrixInclude(Map("scala" -> scala3, "project" -> "rootNative"), Map("os" -> "macos-latest"))
+  MatrixInclude(Map("scala" -> scala3, "java" -> temurin11.render, "project" -> "rootNative"),
+                Map("os"    -> "macos-latest")
+  )
 
 val tzdbVersion             = "2019c"
 val scalajavaLocalesVersion = "1.5.1"
