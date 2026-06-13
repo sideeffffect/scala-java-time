@@ -12,14 +12,14 @@ ThisBuild / githubWorkflowBuildMatrixFailFast := Some(false)
 val javaDistro = JavaSpec.corretto("11")
 ThisBuild / githubWorkflowJavaVersions := Seq(javaDistro)
 
-ThisBuild / githubWorkflowOSes := Seq("ubuntu-latest")
+ThisBuild / githubWorkflowOSes := Seq("ubuntu-22.04")
 
 ThisBuild / githubWorkflowSbtCommand := "./sbt"
 
 ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
   MatrixExclude(Map("scala" -> "3", "project" -> "rootJVM")), // TODO
   MatrixExclude(
-    Map("scala" -> "3", "project" -> "rootNative", "os" -> "ubuntu-latest")
+    Map("scala" -> "3", "project" -> "rootNative", "os" -> "ubuntu-22.04")
   ) // run on macOS instead
 )
 
@@ -37,18 +37,18 @@ lazy val downloadFromZip: TaskKey[Unit] =
 
 inThisBuild(
   List(
-    organization            := "io.github.cquiroz",
-    licenses                := Seq("BSD 3-Clause License" -> url("https://opensource.org/licenses/BSD-3-Clause")),
-    developers              := List(
+    organization           := "io.github.cquiroz",
+    licenses               := Seq("BSD 3-Clause License" -> url("https://opensource.org/licenses/BSD-3-Clause")),
+    developers             := List(
       Developer("cquiroz",
                 "Carlos Quiroz",
                 "carlos.m.quiroz@gmail.com",
                 url("https://github.com/cquiroz")
       )
     ),
-    tlMimaPreviousVersions  := Set(),
-    tlCiReleaseBranches     := Seq("master"),
-    tlCiHeaderCheck         := false
+    tlMimaPreviousVersions := Set(),
+    tlCiReleaseBranches    := Seq("master"),
+    tlCiHeaderCheck        := false
   )
 )
 
@@ -72,7 +72,7 @@ lazy val commonSettings = Seq(
         Seq(
           "-Wconf:msg=object JavaConverters in package .+ is deprecated:s",
           "-Wconf:msg=method mapValues in trait MapOps is deprecated:s",
-          "-Wconf:msg=Passing an explicit array value to a Scala varargs method is deprecated:s",
+          "-Wconf:msg=Passing an explicit array value to a Scala varargs method is deprecated:s"
         )
     }
   },
