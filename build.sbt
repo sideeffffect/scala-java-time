@@ -7,7 +7,7 @@ val scala3   = "3.9.0"
 ThisBuild / scalaVersion       := scala213
 ThisBuild / crossScalaVersions := Seq("2.12.21", scala213, scala3)
 
-ThisBuild / tlBaseVersion := "2.6"
+ThisBuild / tlBaseVersion := "2.8"
 
 ThisBuild / githubWorkflowBuildMatrixFailFast := Some(false)
 
