@@ -15,7 +15,26 @@ class TestTimeZone extends AnyFunSuite {
   )
 
   test("default") {
-    TimeZone.getDefault.getID === "GMT"
+    val tz = TimeZone.getDefault
+    assert(ZoneId.of(tz.getID).getId === tz.getID)
+    assert(ZoneId.systemDefault.getId === tz.getID)
+  }
+
+  test("zoneIdFromPath") {
+    assert(
+      SystemTimeZone.zoneIdFromPath("/usr/share/zoneinfo/Europe/Prague") === Some("Europe/Prague")
+    )
+    assert(SystemTimeZone.zoneIdFromPath("../usr/share/zoneinfo/Etc/UTC") === Some("Etc/UTC"))
+    assert(
+      SystemTimeZone.zoneIdFromPath("/var/db/timezone/zoneinfo/America/New_York") === Some(
+        "America/New_York"
+      )
+    )
+    assert(
+      SystemTimeZone.zoneIdFromPath("/usr/share/zoneinfo/posix/Asia/Tokyo") === Some("Asia/Tokyo")
+    )
+    assert(SystemTimeZone.zoneIdFromPath("/usr/share/zoneinfo/") === None)
+    assert(SystemTimeZone.zoneIdFromPath("/etc/localtime") === None)
   }
 
   test("getTimeZone") {

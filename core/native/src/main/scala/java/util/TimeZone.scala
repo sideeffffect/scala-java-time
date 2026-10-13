@@ -4,14 +4,17 @@ import java.text.DateFormatSymbols
 import java.time.{ Instant, ZoneId }
 import java.time.zone.ZoneRulesProvider
 import scala.collection.JavaConverters._
+import scala.util.{ Success, Try }
 
 object TimeZone {
   final val SHORT = 0
   final val LONG  = 1
 
   private var default: TimeZone =
-    // TODO: implement this functionality, perhaps using https://github.com/scala-native/scala-native/blob/master/posixlib/src/main/scala/scala/scalanative/posix/time.scala
-    new SimpleTimeZone(0, "UTC")
+    SystemTimeZone.candidateIds
+      .map(id => Try(getTimeZone(id)))
+      .collectFirst { case Success(tz) => tz }
+      .getOrElse(new SimpleTimeZone(0, "UTC"))
 
   def getDefault: TimeZone                 = default
   def setDefault(timeZone: TimeZone): Unit = default = timeZone
