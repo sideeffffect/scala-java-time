@@ -15,6 +15,17 @@ ThisBuild / githubWorkflowBuildMatrixFailFast := Some(false)
 val javaDistro = JavaSpec.corretto("17")
 ThisBuild / githubWorkflowJavaVersions := Seq(javaDistro)
 
+// Scala 2 on Native compiles the tests against the JDK's `java.time` signatures. On
+// JDK 17+ `Clock.withZone` then refers to `java.time.InstantSource`, which this
+// library does not have, and the test link fails. Build and test Scala 2 on Native
+// with JDK 11, as before. Scala 3 and the release job need JDK 17.
+ThisBuild / githubWorkflowBuildPreamble += WorkflowStep.Use(
+  UseRef.Public("actions", "setup-java", "v5"),
+  name = Some("Setup Java (corretto@11) for Scala 2 on Native"),
+  params = Map("distribution" -> "corretto", "java-version" -> "11"),
+  cond = Some("matrix.project == 'rootNative' && matrix.scala != '3'")
+)
+
 ThisBuild / githubWorkflowOSes := Seq("ubuntu-22.04")
 
 ThisBuild / githubWorkflowSbtCommand := "./sbt"
