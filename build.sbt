@@ -15,7 +15,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(javaDistro)
 // Windows only runs the native tests on Scala 3, see the exclusions below
 ThisBuild / githubWorkflowOSes := Seq("ubuntu-22.04", "windows-latest")
 
-ThisBuild / githubWorkflowSbtCommand := "./sbt"
+ThisBuild / githubWorkflowSbtCommand := "sbt"
 
 ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
   MatrixExclude(Map("scala" -> "3", "project" -> "rootJVM")), // TODO
