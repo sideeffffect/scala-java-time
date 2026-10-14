@@ -23,10 +23,12 @@ ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
   ) // run on macOS instead
 )
 
-ThisBuild / githubWorkflowBuildMatrixInclusions +=
-  MatrixInclude(Map("scala" -> "3", "java" -> javaDistro.render, "project" -> "rootNative"),
-                Map("os"    -> "macos-latest")
-  )
+ThisBuild / githubWorkflowBuildMatrixInclusions ++= Seq("macos-latest", "windows-latest").map {
+  os =>
+    MatrixInclude(Map("scala" -> "3", "java" -> javaDistro.render, "project" -> "rootNative"),
+                  Map("os"    -> os)
+    )
+}
 
 val tzdbVersion             = "2019c"
 val scalajavaLocalesVersion = "1.5.4"

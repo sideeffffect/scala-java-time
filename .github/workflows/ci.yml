@@ -37,6 +37,10 @@ jobs:
             java: corretto@11
             project: rootNative
             os: macos-latest
+          - scala: 3
+            java: corretto@11
+            project: rootNative
+            os: windows-latest
         exclude:
           - scala: 3
             project: rootJVM
