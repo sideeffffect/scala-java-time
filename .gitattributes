@@ -1,6 +1,8 @@
 # Manage line endings, info from GitHub
 # Set default behaviour, in case users don't have core.autocrlf set.
-* text=auto
+# Always check out LF, also on Windows: the sbt launcher reads .jvmopts and
+# githubWorkflowCheck compares the workflow files byte for byte.
+* text=auto eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary

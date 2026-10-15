@@ -5,14 +5,15 @@ val scala3   = "3.3.8"
 ThisBuild / scalaVersion       := scala213
 ThisBuild / crossScalaVersions := Seq("2.12.21", scala213, scala3)
 
-ThisBuild / tlBaseVersion := "2.6"
+ThisBuild / tlBaseVersion := "2.7"
 
 ThisBuild / githubWorkflowBuildMatrixFailFast := Some(false)
 
 val javaDistro = JavaSpec.corretto("11")
 ThisBuild / githubWorkflowJavaVersions := Seq(javaDistro)
 
-ThisBuild / githubWorkflowOSes := Seq("ubuntu-22.04")
+// Windows only runs the native tests on Scala 3, see the exclusions below
+ThisBuild / githubWorkflowOSes := Seq("ubuntu-22.04", "windows-latest")
 
 ThisBuild / githubWorkflowSbtCommand := "./sbt"
 
@@ -20,7 +21,11 @@ ThisBuild / githubWorkflowBuildMatrixExclusions ++= Seq(
   MatrixExclude(Map("scala" -> "3", "project" -> "rootJVM")), // TODO
   MatrixExclude(
     Map("scala" -> "3", "project" -> "rootNative", "os" -> "ubuntu-22.04")
-  ) // run on macOS instead
+  ), // run on macOS instead
+  MatrixExclude(Map("os" -> "windows-latest", "project" -> "rootJS")),
+  MatrixExclude(Map("os" -> "windows-latest", "project" -> "rootJVM")),
+  MatrixExclude(Map("os" -> "windows-latest", "scala" -> "2.12")),
+  MatrixExclude(Map("os" -> "windows-latest", "scala" -> "2.13"))
 )
 
 ThisBuild / githubWorkflowBuildMatrixInclusions +=
