@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-22.04, windows-latest]
         scala: [2.12, 2.13, 3]
         java: [corretto@17]
         project: [rootJS, rootJVM, rootNative]
@@ -43,9 +43,22 @@ jobs:
           - scala: 3
             project: rootNative
             os: ubuntu-22.04
+          - os: windows-latest
+            project: rootJS
+          - os: windows-latest
+            project: rootJVM
+          - os: windows-latest
+            scala: 2.12
+          - os: windows-latest
+            scala: 2.13
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
+      - name: Ignore line ending differences in git
+        if: contains(runner.os, 'windows')
+        shell: bash
+        run: git config --global core.autocrlf false
+
       - name: Checkout current branch (full)
         uses: actions/checkout@v6
         with:
@@ -65,6 +78,7 @@ jobs:
 
       - name: sbt update
         if: matrix.java == 'corretto@17' && steps.setup-java-corretto-17.outputs.cache-hit == 'false'
+        shell: bash
         run: ./sbt +update
 
       - name: Setup Java (corretto@11) for Scala 2 on Native
@@ -75,33 +89,41 @@ jobs:
           java-version: 11
 
       - name: Check that workflows are up to date
+        shell: bash
         run: ./sbt githubWorkflowCheck
 
       - name: scalaJSLink
         if: matrix.project == 'rootJS'
+        shell: bash
         run: ./sbt 'project ${{ matrix.project }}' '++ ${{ matrix.scala }}' Test/scalaJSLinkerResult
 
       - name: nativeLink
         if: matrix.project == 'rootNative'
+        shell: bash
         run: ./sbt 'project ${{ matrix.project }}' '++ ${{ matrix.scala }}' Test/nativeLink
 
       - name: Test
+        shell: bash
         run: ./sbt 'project ${{ matrix.project }}' '++ ${{ matrix.scala }}' test
 
       - name: Check binary compatibility
         if: matrix.java == 'corretto@17' && matrix.os == 'ubuntu-22.04'
+        shell: bash
         run: ./sbt 'project ${{ matrix.project }}' '++ ${{ matrix.scala }}' mimaReportBinaryIssues
 
       - name: Generate API documentation
         if: matrix.java == 'corretto@17' && matrix.os == 'ubuntu-22.04'
+        shell: bash
         run: ./sbt 'project ${{ matrix.project }}' '++ ${{ matrix.scala }}' doc
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master')
+        shell: bash
         run: mkdir -p core/native/target tzdb/js/target core/js/target core/jvm/target tzdb/jvm/target tzdb/native/target project/target
 
       - name: Compress target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master')
+        shell: bash
         run: tar cf targets.tar core/native/target tzdb/js/target core/js/target core/jvm/target tzdb/jvm/target tzdb/native/target project/target
 
       - name: Upload target directories
@@ -121,6 +143,10 @@ jobs:
         java: [corretto@17]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Ignore line ending differences in git
+        if: contains(runner.os, 'windows')
+        run: git config --global core.autocrlf false
+
       - name: Checkout current branch (full)
         uses: actions/checkout@v6
         with:
@@ -245,6 +271,10 @@ jobs:
         java: [corretto@17]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Ignore line ending differences in git
+        if: contains(runner.os, 'windows')
+        run: git config --global core.autocrlf false
+
       - name: Checkout current branch (full)
         uses: actions/checkout@v6
         with:
