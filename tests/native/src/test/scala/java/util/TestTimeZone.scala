@@ -3,6 +3,7 @@ package java.util
 import org.scalatest.funsuite.AnyFunSuite
 import org.threeten.bp.ZoneId
 import scala.scalanative.meta.LinktimeInfo
+import scala.scalanative.unsafe._
 import scala.collection.immutable.{ Set => ScalaSet }
 
 class TestTimeZone extends AnyFunSuite {
@@ -145,6 +146,17 @@ class TestTimeZone extends AnyFunSuite {
       if (Option(System.getenv("TZ")).isEmpty)
         assert(TimeZone.getDefault.getID === zoneId.get)
     }
+  }
+
+  test("DYNAMIC_TIME_ZONE_INFORMATION layout matches the Windows ABI") {
+    import WindowsTimeZoneExtern.DynamicTimeZoneInformation
+    val info                    = stackalloc[DynamicTimeZoneInformation]()
+    def offset(p: Ptr[_]): Long = p.toLong - info.toLong
+    assert(sizeOf[DynamicTimeZoneInformation] === 432)
+    assert(offset(info.at2) === 4)   // StandardName
+    assert(offset(info.at3) === 68)  // StandardDate
+    assert(offset(info.at8) === 172) // TimeZoneKeyName
+    assert(offset(info.at9) === 428) // DynamicDaylightTimeDisabled
   }
 
   test("Windows mapping targets are known zone IDs") {

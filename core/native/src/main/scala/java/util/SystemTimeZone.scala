@@ -4,7 +4,10 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{ Files, Paths }
 import scala.scalanative.meta.LinktimeInfo
 import scala.scalanative.unsafe._
+import scala.scalanative.unsafe.Nat._
 import scala.scalanative.unsigned._
+import scala.scalanative.windows.{ DWord, WChar }
+import scala.scalanative.windows.MinWinBaseApi.SystemTime
 import scala.util.Try
 
 /**
@@ -96,35 +99,38 @@ private[util] object SystemTimeZone {
 
 @extern
 private[util] object WindowsTimeZoneExtern {
-  def GetDynamicTimeZoneInformation(info: Ptr[Byte]): UInt = extern
+  type Name32  = CArray[WChar, Digit2[_3, _2]]
+  type Name128 = CArray[WChar, Digit3[_1, _2, _8]]
+
+  /**
+   * `DYNAMIC_TIME_ZONE_INFORMATION`, see
+   * [[https://learn.microsoft.com/en-us/windows/win32/api/timezoneapi/ns-timezoneapi-dynamic_time_zone_information]]
+   */
+  type DynamicTimeZoneInformation = CStruct9[
+    CInt,       // Bias
+    Name32,     // StandardName
+    SystemTime, // StandardDate
+    CInt,       // StandardBias
+    Name32,     // DaylightName
+    SystemTime, // DaylightDate
+    CInt,       // DaylightBias
+    Name128,    // TimeZoneKeyName
+    UByte       // DynamicDaylightTimeDisabled
+  ]
+
+  def GetDynamicTimeZoneInformation(info: Ptr[DynamicTimeZoneInformation]): DWord = extern
 }
 
 private[util] object WindowsTimeZoneApi {
-  // Layout of DYNAMIC_TIME_ZONE_INFORMATION: Bias (4 bytes), StandardName (32 WCHARs),
-  // StandardDate (16), StandardBias (4), DaylightName (32 WCHARs), DaylightDate (16),
-  // DaylightBias (4), TimeZoneKeyName (128 WCHARs), DynamicDaylightTimeDisabled (1), padding.
-  private final val KeyNameOffset     = 4 + 64 + 16 + 4 + 64 + 16 + 4
-  private final val KeyNameMaxChars   = 128
-  private final val StructSize        = 432
-  private final val TimeZoneIdInvalid = 0xffffffff
+  import WindowsTimeZoneExtern._
+
+  private final val TimeZoneIdInvalid: DWord = 0xffffffff.toUInt
 
   def timeZoneKeyName: Option[String] = {
-    val info = stackalloc[Byte](StructSize)
-    if (WindowsTimeZoneExtern.GetDynamicTimeZoneInformation(info).toInt == TimeZoneIdInvalid) None
-    else {
-      val sb = new java.lang.StringBuilder
-      var i  = 0
-      var ch = readWChar(info, KeyNameOffset)
-      while (i < KeyNameMaxChars && ch != 0) {
-        sb.append(ch)
-        i += 1
-        ch = readWChar(info, KeyNameOffset + 2 * i)
-      }
-      Some(sb.toString).filter(_.nonEmpty)
-    }
+    val info = stackalloc[DynamicTimeZoneInformation]()
+    if (GetDynamicTimeZoneInformation(info) == TimeZoneIdInvalid) None
+    else
+      Option(fromCWideString(info.at8.asInstanceOf[Ptr[WChar]], StandardCharsets.UTF_16LE))
+        .filter(_.nonEmpty)
   }
-
-  // WCHAR is UTF-16 little-endian on Windows
-  private def readWChar(p: Ptr[Byte], offset: Int): Char =
-    ((p(offset + 1) & 0xff) << 8 | (p(offset) & 0xff)).toChar
 }
