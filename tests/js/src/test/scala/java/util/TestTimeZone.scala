@@ -3,6 +3,8 @@ package java.util
 import org.scalatest.funsuite.AnyFunSuite
 import org.threeten.bp.ZoneId
 
+import scala.scalajs.js
+
 class TestTimeZone extends AnyFunSuite {
 
   val sampleTimeZones    = Seq("UTC", "GMT", "Europe/Madrid", "Australia/Sydney")
@@ -16,6 +18,21 @@ class TestTimeZone extends AnyFunSuite {
 
   test("default") {
     TimeZone.getDefault.getID === "GMT"
+  }
+
+  // On a JS host the default comes from the host, not from the UTC fallback that
+  // is used on WebAssembly without a JS host
+  test("default is detected from the JS host") {
+    val hostId     = js.Dynamic.global.Intl.DateTimeFormat().resolvedOptions().timeZone
+    val hostOffset = new js.Date().getTimezoneOffset().toInt * 60 * 1000
+    val default    = TimeZone.getDefault
+    if (!js.isUndefined(hostId))
+      assert(default.getID === hostId.asInstanceOf[String])
+    assert(default.getRawOffset === hostOffset)
+  }
+
+  test("ZoneId.systemDefault agrees with TimeZone.getDefault") {
+    assert(ZoneId.systemDefault.getId === ZoneId.of(TimeZone.getDefault.getID).getId)
   }
 
   test("getTimeZone") {

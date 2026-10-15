@@ -7,6 +7,7 @@ import java.time.zone.ZoneRulesProvider
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.scalajs.LinkingInfo
 import scala.scalajs.js
 import js.annotation._
 
@@ -25,7 +26,24 @@ object TimeZone {
   final val SHORT = 0
   final val LONG  = 1
 
-  private var default: TimeZone = {
+  private var default: TimeZone =
+    // On a WebAssembly target without a JavaScript host (the scala-wasm fork's
+    // `ModuleKind.MinimalWasmModule` = 4 and `ModuleKind.WasmComponent` = 5),
+    // `js.Date` and `Intl` do not exist, and any reference to them fails at link
+    // time. `linkTimeIf` removes the unused branch at link time, so on such
+    // targets the default time zone is UTC and no JavaScript is linked. All other
+    // targets (JS, Wasm with a JS host) keep the detection below.
+    // The values are literals because mainline Scala.js does not define these
+    // two `LinkingInfo.ModuleKind` constants. Mainline uses only 1 to 3.
+    LinkingInfo.linkTimeIf[TimeZone](
+      LinkingInfo.isWebAssembly && (LinkingInfo.moduleKind == 4 || LinkingInfo.moduleKind == 5)
+    ) {
+      new SimpleTimeZone(0, "UTC")
+    } {
+      hostDefault()
+    }
+
+  private def hostDefault(): TimeZone = {
     // This is supported since EcmaScript 1
     def offsetInMillis: Int = {
       val browserDate = new scalajs.js.Date()

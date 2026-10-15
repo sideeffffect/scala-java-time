@@ -1,16 +1,30 @@
 import org.scalajs.linker.interface.CheckedBehavior
 
 val scala213 = "2.13.18"
-val scala3   = "3.3.8"
+// Scala 3.8.0+ compiles `scala.scalajs.LinkingInfo.linkTimeIf` (used by `java.util.TimeZone`
+// on Scala.js); in Scala 3.3.x it is a stub that throws at run time
+val scala3   = "3.9.0"
 ThisBuild / scalaVersion       := scala213
 ThisBuild / crossScalaVersions := Seq("2.12.21", scala213, scala3)
 
-ThisBuild / tlBaseVersion := "2.7"
+ThisBuild / tlBaseVersion := "2.8"
 
 ThisBuild / githubWorkflowBuildMatrixFailFast := Some(false)
 
-val javaDistro = JavaSpec.corretto("11")
+// Scala 3.8+ needs JDK 17 or later
+val javaDistro = JavaSpec.corretto("17")
 ThisBuild / githubWorkflowJavaVersions := Seq(javaDistro)
+
+// Scala 2 on Native compiles the tests against the JDK's `java.time` signatures. On
+// JDK 17+ `Clock.withZone` then refers to `java.time.InstantSource`, which this
+// library does not have, and the test link fails. Build and test Scala 2 on Native
+// with JDK 11, as before. Scala 3 and the release job need JDK 17.
+ThisBuild / githubWorkflowBuildPreamble += WorkflowStep.Use(
+  UseRef.Public("actions", "setup-java", "v5"),
+  name = Some("Setup Java (corretto@11) for Scala 2 on Native"),
+  params = Map("distribution" -> "corretto", "java-version" -> "11"),
+  cond = Some("matrix.project == 'rootNative' && matrix.scala != '3'")
+)
 
 // Windows only runs the native tests on Scala 3, see the exclusions below
 ThisBuild / githubWorkflowOSes := Seq("ubuntu-22.04", "windows-latest")
@@ -81,7 +95,19 @@ lazy val commonSettings = Seq(
         )
     }
   },
-  scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation", "-feature"),
+  scalacOptions ++= Seq("-deprecation", "-feature"),
+  scalacOptions ++= {
+    if (tlIsScala3.value)
+      Seq(
+        // Scala 3.4+ deprecates `-Xfatal-warnings` in favour of `-Werror`
+        "-Werror",
+        // The sources are shared with Scala 2.12, which cannot use the Scala 3 syntax
+        // `?` (wildcard types) and `xs*` (vararg splices) that these warnings ask for
+        "-Wconf:msg=is deprecated for wildcard arguments of types:s",
+        "-Wconf:msg=is no longer supported for vararg splices:s"
+      )
+    else Seq("-Xfatal-warnings")
+  },
   javaOptions ++= Seq("-Dfile.encoding=UTF8"),
   Compile / doc / sources         := Seq()
 )
