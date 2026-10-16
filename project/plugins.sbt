@@ -3,7 +3,8 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.2")
 // Scala 3.9.0 depends on scalajs-javalib 1.22.0
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.22.0")
 
-addSbtPlugin("io.github.cquiroz" % "sbt-tzdb" % "5.0.0")
+// Local build of sbt-tzdb main (cquiroz/sbt-tzdb#367). Replace with the release that contains it.
+addSbtPlugin("io.github.cquiroz" % "sbt-tzdb" % "5.3.0+3-6ccbb32e-SNAPSHOT")
 
 addSbtPlugin("org.typelevel" % "sbt-typelevel-ci-release" % "0.8.6")
 
