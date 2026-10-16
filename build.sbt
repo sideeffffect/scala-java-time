@@ -222,6 +222,8 @@ lazy val tzdb = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     dbVersion   := TzdbPlugin.Version(tzdbVersion)
   )
   .jsSettings(
+    // Also generate a portable copy of the data, linked only on Wasm targets without a JS host.
+    tzdbWasmSupport := true,
     Compile / sourceGenerators += Def.task {
       val srcDirs        = (Compile / sourceManaged).value
       val destinationDir = (Compile / sourceManaged).value
