@@ -48,6 +48,27 @@ class TestTimeZone extends AnyFunSuite {
     }
   }
 
+  // The raw offset is computed when it is first read, not when the time zone is
+  // created, so the result must be the same as an eager computation
+  test("getTimeZone raw offset is the current standard offset") {
+    for (tzId <- sampleTimeZones :+ "America/New_York") {
+      val tz       = TimeZone.getTimeZone(tzId)
+      val expected =
+        ZoneId.of(tzId).getRules.getStandardOffset(org.threeten.bp.Instant.now).getTotalSeconds * 1000
+      assert(tz.isInstanceOf[SimpleTimeZone])
+      assert(tz.getID === tzId)
+      assert(tz.getRawOffset === expected)
+      assert(tz.getRawOffset === expected)
+      val cloned = tz.clone.asInstanceOf[TimeZone]
+      assert(cloned.getID === tzId)
+      assert(cloned.getRawOffset === expected)
+    }
+  }
+
+  test("getTimeZone fails on an unknown zone") {
+    assertThrows[Exception](TimeZone.getTimeZone("Not/AZone"))
+  }
+
   test("availableIDs") {
     val availableIds = TimeZone.getAvailableIDs
     for (tzId <- sampleTimeZones)

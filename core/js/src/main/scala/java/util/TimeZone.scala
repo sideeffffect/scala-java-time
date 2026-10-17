@@ -73,10 +73,23 @@ object TimeZone {
   def setDefault(timeZone: TimeZone): Unit = default = timeZone
 
   def getTimeZone(timeZone: String): TimeZone = getTimeZone(ZoneId.of(timeZone))
-  def getTimeZone(zoneId: ZoneId): TimeZone   = {
-    val rules          = zoneId.getRules
-    val offsetInMillis = rules.getStandardOffset(Instant.now).getTotalSeconds * 1000
-    new SimpleTimeZone(offsetInMillis, zoneId.getId)
+  def getTimeZone(zoneId: ZoneId): TimeZone   = new ZoneIdTimeZone(zoneId)
+
+  // The raw offset is the standard offset at the current instant, so it needs the
+  // wall clock. It is computed on the first call of `getRawOffset`, not when the
+  // time zone is created. Code that only needs the ID or the display names (for
+  // example the zone text printer-parser of `DateTimeFormatter`, used by every
+  // `DateTimeFormatter.ofPattern`) then does not read the clock, and the linker can
+  // drop `Instant.now`. This matters on WebAssembly without a JavaScript host, where
+  // the clock is not available and any reference to it fails at link time.
+  // The rules are still looked up eagerly, so an unknown zone fails here, as before.
+  private final class ZoneIdTimeZone(zoneId: ZoneId) extends SimpleTimeZone(0, zoneId.getId) {
+    private val rules = zoneId.getRules
+
+    private lazy val currentStandardOffset: Int =
+      rules.getStandardOffset(Instant.now).getTotalSeconds * 1000
+
+    override def getRawOffset: Int = currentStandardOffset
   }
 
   def getAvailableIDs: Array[String]                    = ZoneRulesProvider.getAvailableZoneIds.asScala.toArray
